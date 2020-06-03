@@ -977,13 +977,12 @@ namespace Veldrid.Sdl2
 
             public Vector2 MousePosition { get; set; }
 
-            private bool[] _mouseDown = new bool[13];
-            public bool[] MouseDown => _mouseDown;
+            public bool[] MouseDown { get; } = new bool[13];
             public float WheelDelta { get; set; }
 
             public bool IsMouseDown(MouseButton button)
             {
-                return _mouseDown[(int)button];
+                return MouseDown[(int)button];
             }
 
             internal void Clear()
@@ -1009,7 +1008,7 @@ namespace Veldrid.Sdl2
 
                 other.MousePosition = MousePosition;
                 other.WheelDelta = WheelDelta;
-                _mouseDown.CopyTo(other._mouseDown, 0);
+                MouseDown.CopyTo(other.MouseDown, 0);
             }
         }
 
