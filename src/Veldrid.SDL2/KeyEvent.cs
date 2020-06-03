@@ -549,7 +549,7 @@
         Tilde = 119,
         //
         // Summary:
-        //     The grave key (equivaent to Tilde).
+        //     The grave key (equivalent to Tilde).
         Grave = 119,
         //
         // Summary:
