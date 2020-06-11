@@ -1,12 +1,51 @@
-﻿using NativeLibraryLoader;
+﻿using Microsoft.Extensions.DependencyModel;
+using NativeLibraryLoader;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
 
 namespace Veldrid.Sdl2
 {
     public static unsafe partial class Sdl2Native
     {
+        private class Sdl2PathResolver : PathResolver
+        {
+            public Sdl2PathResolver()
+            {
+            }
+
+            public override IEnumerable<string> EnumeratePossibleLibraryLoadTargets(string name)
+            {
+                // Get list of RTIDs
+                DependencyContext defaultContext = DependencyContext.Default;
+                string actualRid = Microsoft.DotNet.PlatformAbstractions.RuntimeEnvironment.GetRuntimeIdentifier();
+                List<string> rids = new List<string>() { actualRid };
+                foreach (RuntimeFallbacks fallback in defaultContext.RuntimeGraph)
+                {
+                    if (fallback.Runtime == actualRid)
+                    {
+                        rids.AddRange(fallback.Fallbacks);
+                        break;
+                    }
+                }
+
+                // Use RTIDs to enumerate paths in base directory
+                foreach (string rid in rids)
+                {
+                    string path = Path.Combine(AppContext.BaseDirectory, "native", rid, name);
+                    yield return Path.GetFullPath(path);
+                }
+
+                // Default fallback
+                foreach (string target in Default.EnumeratePossibleLibraryLoadTargets(name))
+                {
+                    yield return target;
+                }
+            }
+        }
+
         private static readonly NativeLibrary s_sdl2Lib = LoadSdl2();
         private static NativeLibrary LoadSdl2()
         {
@@ -37,7 +76,7 @@ namespace Veldrid.Sdl2
                 names = new[] { "SDL2.dll" };
             }
 
-            NativeLibrary lib = new NativeLibrary(names);
+            NativeLibrary lib = new NativeLibrary(names, LibraryLoader.GetPlatformDefaultLoader(), new Sdl2PathResolver());
             return lib;
         }
 
