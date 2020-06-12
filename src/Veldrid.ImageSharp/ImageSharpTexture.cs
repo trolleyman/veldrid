@@ -62,20 +62,18 @@ namespace Veldrid.ImageSharp
             }
         }
 
-        public unsafe Texture CreateDeviceTexture(GraphicsDevice gd, ResourceFactory factory) => CreateDeviceTexture(gd, factory, TextureUsage.Sampled);
-
-        public unsafe Texture CreateDeviceTexture(GraphicsDevice gd, ResourceFactory factory, TextureUsage textureUsage)
+        public unsafe Texture CreateDeviceTexture(GraphicsDevice gd, ResourceFactory factory)
         {
-            return CreateTextureViaUpdate(gd, factory, textureUsage);
+            return CreateTextureViaUpdate(gd, factory);
         }
 
-        private unsafe Texture CreateTextureViaStaging(GraphicsDevice gd, ResourceFactory factory, TextureUsage textureUsage)
+        private unsafe Texture CreateTextureViaStaging(GraphicsDevice gd, ResourceFactory factory)
         {
             Texture staging = factory.CreateTexture(
                 TextureDescription.Texture2D(Width, Height, MipLevels, 1, Format, TextureUsage.Staging));
 
             Texture ret = factory.CreateTexture(
-                TextureDescription.Texture2D(Width, Height, MipLevels, 1, Format, textureUsage));
+                TextureDescription.Texture2D(Width, Height, MipLevels, 1, Format, TextureUsage.Sampled));
 
             CommandList cl = gd.ResourceFactory.CreateCommandList();
             cl.Begin();
@@ -117,10 +115,10 @@ namespace Veldrid.ImageSharp
             return ret;
         }
 
-        private unsafe Texture CreateTextureViaUpdate(GraphicsDevice gd, ResourceFactory factory, TextureUsage textureUsage)
+        private unsafe Texture CreateTextureViaUpdate(GraphicsDevice gd, ResourceFactory factory)
         {
             Texture tex = factory.CreateTexture(TextureDescription.Texture2D(
-                Width, Height, MipLevels, 1, Format, textureUsage));
+                Width, Height, MipLevels, 1, Format, TextureUsage.Sampled));
             for (int level = 0; level < MipLevels; level++)
             {
                 Image<Rgba32> image = Images[level];
